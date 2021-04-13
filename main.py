@@ -23,12 +23,17 @@ from losses import DistillationLoss
 from samplers import RASampler
 import models
 import utils
-
+from pruning_utils import *
 
 def get_args_parser():
     parser = argparse.ArgumentParser('DeiT training and evaluation script', add_help=False)
     parser.add_argument('--batch-size', default=64, type=int)
     parser.add_argument('--epochs', default=300, type=int)
+
+    # Pruning parameters
+    parser.add_argument('--init_mask', default=None, type=str, help='init mask direction')    
+    parser.add_argument('--data_rate', type=float, default=1.0)
+    parser.add_argument('--data_split', type=str, default=None)
 
     # Model parameters
     parser.add_argument('--model', default='deit_base_patch16_224', type=str, metavar='MODEL',
@@ -246,6 +251,12 @@ def main(args):
         drop_path_rate=args.drop_path,
         drop_block_rate=None,
     )
+
+    if args.init_mask:
+        print('* loading mask from {}'.format(args.init_mask))
+        current_mask = torch.load(args.init_mask, map_location='cpu')
+        prune_model_custom(model, current_mask)
+        check_sparsity(model)
 
     if args.finetune:
         if args.finetune.startswith('https'):

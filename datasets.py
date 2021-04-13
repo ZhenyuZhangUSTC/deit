@@ -2,12 +2,60 @@
 # All rights reserved.
 import os
 import json
-
+from PIL import Image
 from torchvision import datasets, transforms
 from torchvision.datasets.folder import ImageFolder, default_loader
 
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from timm.data import create_transform
+
+from torch.utils.dataset import Dataset
+
+class split_imagenet_dataset(Dataset):
+
+    def __init__(self, root, txt, rate=1., transform=None):
+        self.img_path = []
+        self.labels = []
+        self.root = root
+        self.transform = transform
+        self.data_rate = rate
+
+        with open(txt) as f:
+            for line in f:
+                self.img_path.append(os.path.join(root, line.split()[0]))
+                self.labels.append(int(line.split()[1]))
+
+        num_class = 1000
+        idxs = np.array(list(range(len(self.img_path)))).astype(np.long)
+        targets = np.array(self.labels)
+
+        idxList = []
+        for i in range(num_class):
+            idxList.append(idxs[targets == i])
+
+        newIdxList = []
+        for idxs in idxList:
+            idxSampled = idxs[:int(len(idxs) * self.data_rate)]
+            newIdxList += idxSampled.tolist()
+
+        self.img_path = np.array(self.img_path)[newIdxList].tolist()
+        self.labels = np.array(self.labels)[newIdxList].tolist()
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, index):
+
+        path = self.img_path[index]
+        label = self.labels[index]
+
+        with open(path, 'rb') as f:
+            sample = Image.open(f).convert('RGB')
+
+        if self.transform is not None:
+            sample = self.transform(sample)
+
+        return sample, label
 
 
 class INatDataset(ImageFolder):
@@ -61,7 +109,10 @@ def build_dataset(is_train, args):
         nb_classes = 100
     elif args.data_set == 'IMNET':
         root = os.path.join(args.data_path, 'train' if is_train else 'val')
-        dataset = datasets.ImageFolder(root, transform=transform)
+        if args.data_rate < 1 and is_train:
+            dataset = split_imagenet_dataset(root, args.data_split, args.data_rate, transform=transform)
+        else:
+            dataset = datasets.ImageFolder(root, transform=transform)
         nb_classes = 1000
     elif args.data_set == 'INAT':
         dataset = INatDataset(args.data_path, train=is_train, year=2018,
