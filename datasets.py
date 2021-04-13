@@ -2,6 +2,7 @@
 # All rights reserved.
 import os
 import json
+import numpy as np 
 from PIL import Image
 from torchvision import datasets, transforms
 from torchvision.datasets.folder import ImageFolder, default_loader
