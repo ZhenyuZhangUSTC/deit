@@ -26,6 +26,22 @@ parser.add_argument('--drop-path', type=float, default=0.1, metavar='PCT',
 args = parser.parse_args()
 
 
+def prune_loop(model, loss, pruner, dataloader, device, sparsity, scope, epochs, train_mode=False):
+
+    # Set model to train or eval mode
+    model.train()
+    if not train_mode:
+        model.eval()
+
+    # Prune model
+    for epoch in range(epochs):
+        pruner.score(model, loss, dataloader, device)
+
+        sparse = sparsity**((epoch + 1) / epochs)
+
+        pruner.mask(sparse, scope)
+
+
 number_examples = 100
 data = torch.ones(number_examples, 3, args.input_size, args.input_size)
 target = torch.ones(number_examples)
