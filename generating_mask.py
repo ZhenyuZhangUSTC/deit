@@ -60,7 +60,7 @@ model = create_model(
     drop_path_rate=args.drop_path,
     drop_block_rate=None,
 )
-torch.save('deit_tiniy_random_init.pth')
+torch.save(model.state_dict(), 'random_init.pt')
 #pretrained or not
 if args.pretrained:
     print('loading pretrained weight')
