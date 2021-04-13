@@ -15,7 +15,6 @@ from torch.utils.data import Dataset
 class split_imagenet_dataset(Dataset):
 
     def __init__(self, root, txt, rate=1., transform=None):
-        print(root)
         self.img_path = []
         self.labels = []
         self.root = root
