@@ -98,7 +98,7 @@ model.load_state_dict(save_state_dict, strict=False)
 model.cuda()
 
 pruner = SynFlow(masked_parameters(model))
-prune_loop(model, None, pruner, loader, torch.device('cuda:0'), args.sparsity, scope='global', epochs=100, train_mode=True)
+prune_loop(model, None, pruner, loader, torch.device('cuda:0'), args.sparsity, scope='global', epochs=1, train_mode=True)
 print('sparsity = {}'.format(args.sparsity))
 
 current_mask = extract_mask(model.state_dict())
