@@ -4,7 +4,8 @@ python -m torch.distributed.launch \
     --model deit_tiny_patch16_224 \
     --batch-size 256 \
     --data-path /datadrive_c/tianlong/TLC/imagenet \
-    --init_mask deit_tiny_patch16_224_sparse0.5_at_init.pt \
+    --init_mask deit_tiny_mask_init/deit_tiny_patch16_224_sparse0.5_at_init.pt \
     --output_dir experiment/tiny_8gpus_256_sparse05_at_init_20data \
     --data_rate 0.2 \
-    --data_split split/ImageNet_train.txt 
+    --data_split split/ImageNet_train.txt \
+    --init_weight deit_tiny_mask_init/random_init.pt 

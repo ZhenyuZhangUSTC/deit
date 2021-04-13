@@ -6,4 +6,5 @@ python -m torch.distributed.launch \
     --data-path /datadrive_c/yucheng/imagenet \
     --output_dir experiment/tiny_8gpus_256_dense_20data \
     --data_rate 0.2 \
-    --data_split split/ImageNet_train.txt 
+    --data_split split/ImageNet_train.txt \
+    --init_weight deit_tiny_mask_init/random_init.pt 

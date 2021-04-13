@@ -162,6 +162,11 @@ def check_sparsity(model):
     
     return 100*(1-zero_sum/sum_list)
 
+
+
+
+
+
 def prune_model_identity(model):
 
     print('start pruning with identity mask')

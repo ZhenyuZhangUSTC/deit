@@ -40,6 +40,7 @@ def prune_loop(model, loss, pruner, dataloader, device, sparsity, scope, epochs,
         sparse = sparsity**((epoch + 1) / epochs)
 
         pruner.mask(sparse, scope)
+        check_sparsity(model)
 
 
 number_examples = 100
@@ -59,7 +60,7 @@ model = create_model(
     drop_path_rate=args.drop_path,
     drop_block_rate=None,
 )
-
+torch.save('deit_tiniy_random_init.pth')
 #pretrained or not
 if args.pretrained:
     print('loading pretrained weight')
@@ -68,7 +69,7 @@ if args.pretrained:
     model.load_state_dict(checkpoint['model'])
 
 model.cuda()
-
+check_sparsity(model) 
 # Identity pruning
 prune_model_identity(model)
 pruner = SynFlow(masked_parameters(model))
@@ -77,7 +78,7 @@ prune_loop(model, None, pruner, loader, torch.device('cuda:0'), args.sparsity, s
 
 print('sparsity = {}'.format(args.sparsity))
 check_sparsity(model) 
-current_mask = extract_mask(model)
+current_mask = extract_mask(model.state_dict())
 torch.save(current_mask, args.save_file)
 
 

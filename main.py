@@ -32,6 +32,7 @@ def get_args_parser():
 
     # Pruning parameters
     parser.add_argument('--init_mask', default=None, type=str, help='init mask direction')    
+    parser.add_argument('--init_weight', default=None, type=str, help='init weight direction')    
     parser.add_argument('--data_rate', type=float, default=1.0)
     parser.add_argument('--data_split', type=str, default=None)
 
@@ -251,6 +252,10 @@ def main(args):
         drop_path_rate=args.drop_path,
         drop_block_rate=None,
     )
+    if args.init_weight:
+        print('* loading init weight from {}'.format(args.init_weight))
+        initialization = torch.load(args.init_weight, map_location='cpu')
+        model.load_state_dict(initialization)
 
     if args.init_mask:
         print('* loading mask from {}'.format(args.init_mask))
