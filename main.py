@@ -24,6 +24,9 @@ from samplers import RASampler
 import models
 import utils
 from pruning_utils import *
+from generating_mask import prune_conv_linear
+from layers import Linear, Conv2d
+
 
 def get_args_parser():
     parser = argparse.ArgumentParser('DeiT training and evaluation script', add_help=False)
@@ -252,16 +255,26 @@ def main(args):
         drop_path_rate=args.drop_path,
         drop_block_rate=None,
     )
+
+    prune_conv_linear(model)
+
+
     if args.init_weight:
         print('* loading init weight from {}'.format(args.init_weight))
-        initialization = torch.load(args.init_weight, map_location='cpu')
-        model.load_state_dict(initialization)
+        initialization = torch.load(args.init_weight, map_location='cpu')        
+        for key in initialization.keys():
+            if not key in model.state_dict().keys():
+                print('can not load key = {}'.format(key))
+        model.load_state_dict(initialization, strict=False)
 
     if args.init_mask:
         print('* loading mask from {}'.format(args.init_mask))
         current_mask = torch.load(args.init_mask, map_location='cpu')
-        prune_model_custom(model, current_mask)
-        check_sparsity(model)
+        for key in current_mask.keys():
+            if not key in model.state_dict().keys():
+                print('can not load mask key = {}'.format(key))
+        model.load_state_dict(current_mask, strict=False)
+        check_sparsity_dict(model.state_dict())
 
     if args.finetune:
         if args.finetune.startswith('https'):
