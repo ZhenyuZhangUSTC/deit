@@ -2,13 +2,15 @@ import os
 import torch
 import argparse
 import numpy as np
+import torch.nn as nn
 from timm.models import create_model
 from datasets import build_dataset
 import torchvision.datasets as datasets
 from torch.utils.data import DataLoader, Subset, Dataset
 
-import models 
+import models
 from pruning_utils import *
+from layers import Conv2d, Linear
 
 parser = argparse.ArgumentParser('Pruning DeiT', add_help=False)
 # Pruning parameters
@@ -39,10 +41,31 @@ def prune_loop(model, loss, pruner, dataloader, device, sparsity, scope, epochs,
 
         sparse = sparsity**((epoch + 1) / epochs)
         print(sparse)
-
         pruner.mask(sparse, scope)
-        check_sparsity(model)
 
+        current_mask = extract_mask(model.state_dict())
+        check_sparsity_dict(current_mask)
+
+
+def prune_conv_linear(model):
+
+    for name, module in reversed(model._modules.items()):
+
+        if len(list(module.children())) > 0:
+            model._modules[name] = prune_conv_linear(model=module)
+
+        if isinstance(module, nn.Linear):
+            bias=True
+            if module.bias == None:
+                bias=False
+            layer_new = Linear(module.in_features, module.out_features, bias)
+            model._modules[name] = layer_new
+
+        if isinstance(module, nn.Conv2d):
+            layer_new = Conv2d(module.in_channels, module.out_channels, module.kernel_size, module.stride)
+            model._modules[name] = layer_new
+
+    return model
 
 number_examples = 100
 data = torch.ones(number_examples, 3, args.input_size, args.input_size)
@@ -69,17 +92,21 @@ if args.pretrained:
         args.pretrained, map_location='cpu', check_hash=True)
     model.load_state_dict(checkpoint['model'])
 
+save_state_dict = copy.deepcopy(model.state_dict())
+prune_conv_linear(model)
+
+for key in save_state_dict.keys():
+    if not key in model.state_dict().keys():
+        print('can not load key = {}'.format(key))
+
+model.load_state_dict(save_state_dict, strict=False)
 model.cuda()
-check_sparsity(model) 
-# Identity pruning
-prune_model_identity(model)
+
 pruner = SynFlow(masked_parameters(model))
-
 prune_loop(model, None, pruner, loader, torch.device('cuda:0'), args.sparsity, scope='global', epochs=10, train_mode=True)
-
 print('sparsity = {}'.format(args.sparsity))
+
 current_mask = extract_mask(model.state_dict())
-check_sparsity(model) 
 check_sparsity_dict(current_mask)
 
 torch.save(current_mask, args.save_file)

@@ -7,14 +7,12 @@ import torch.nn.utils.prune as prune
 __all__ = ['masked_parameters', 'SynFlow', 'check_sparsity', 'check_sparsity_dict', 
         'prune_model_identity', 'prune_model_custom', 'extract_mask']
 
-
-# def masks(module):
-#     r"""Returns an iterator over modules masks, yielding the mask.
-#     """
-#     for name, buf in module.named_buffers():
-#         if "mask" in name:
-#             yield buf
-
+def masks(module):
+    r"""Returns an iterator over modules masks, yielding the mask.
+    """
+    for name, buf in module.named_buffers():
+        if "mask" in name:
+            yield buf
 
 def masked_parameters(model):
     r"""Returns an iterator over models prunable parameters, yielding both the
@@ -22,16 +20,9 @@ def masked_parameters(model):
     """
     for module in model.modules():
         if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
-                yield module.weight_mask, module.weight_orig
-            
-            # for name,p in module.named_parameters():
-        
-
-            #     print(name, p.size(), module.weight_orig.size())
-            # for mask, param in zip(masks(module), module.parameters(recurse=False)):
-            #     if param is module.weight_orig:
-            #         print(111)
-            #         yield mask, param
+            for mask, param in zip(masks(module), module.parameters(recurse=False)):
+                if param is not module.bias
+                    yield mask, param
 
 class Pruner:
     def __init__(self, masked_parameters):
@@ -42,7 +33,6 @@ class Pruner:
         raise NotImplementedError
 
     def _global_mask(self, sparsity):
-
         r"""Updates masks of model with scores by sparsity level globally.
         """
         # # Set score for masked parameters to -inf 
@@ -53,10 +43,8 @@ class Pruner:
         # Threshold scores
         global_scores = torch.cat([torch.flatten(v) for v in self.scores.values()])
         k = int((1.0 - sparsity) * global_scores.numel())
-
         if not k < 1:
             threshold, _ = torch.kthvalue(global_scores, k)
-            print((global_scores>threshold).float().sum()/global_scores.nelement())            
             for mask, param in self.masked_parameters:
                 score = self.scores[id(param)] 
                 zero = torch.tensor([0.]).to(mask.device)
@@ -131,9 +119,6 @@ class SynFlow(Pruner):
                 param.abs_()
             return signs
 
-        check_sparsity_dict(model.state_dict())
-
-
         @torch.no_grad()
         def nonlinearize(model, signs):
             # model.float()
@@ -141,22 +126,18 @@ class SynFlow(Pruner):
                 param.mul_(signs[name])
         
         signs = linearize(model)
-        check_sparsity_dict(model.state_dict())
 
         (data, _) = next(iter(dataloader))
         input_dim = list(data[0,:].shape)
         input = torch.ones([1] + input_dim).to(device)#, dtype=torch.float64).to(device)
         output = model(input)
         torch.sum(output).backward()
-        check_sparsity_dict(model.state_dict())
         
         for _, p in self.masked_parameters:
             self.scores[id(p)] = torch.clone(p.grad * p).detach().abs_()
             p.grad.data.zero_()
-        check_sparsity_dict(model.state_dict())
 
         nonlinearize(model, signs)
-        check_sparsity_dict(model.state_dict())
 
 def check_sparsity(model):
 
@@ -171,23 +152,6 @@ def check_sparsity(model):
     print('* remain weight = ', 100*(1-zero_sum/sum_list),'%')
     
     return 100*(1-zero_sum/sum_list)
-
-
-def check_sparsity_dict(mask_dict):
-
-    sum_list = 0
-    zero_sum = 0
-
-    for key in mask_dict.keys():
-        if 'mask' in key:
-            sum_list = sum_list+float(mask_dict[key].nelement())
-            zero_sum = zero_sum+float(torch.sum(mask_dict[key] == 0))  
-
-    print('* remain weight = ', 100*(1-zero_sum/sum_list),'%')
-    
-    return 100*(1-zero_sum/sum_list)
-
-
 
 def prune_model_identity(model):
 
