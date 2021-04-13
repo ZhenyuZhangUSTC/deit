@@ -56,7 +56,7 @@ class Pruner:
 
         if not k < 1:
             threshold, _ = torch.kthvalue(global_scores, k)
-            print((global_scores<=threshold).float().sum()/global_scores.nelement())            
+            print((global_scores>threshold).float().sum()/global_scores.nelement())            
             for mask, param in self.masked_parameters:
                 score = self.scores[id(param)] 
                 zero = torch.tensor([0.]).to(mask.device)
