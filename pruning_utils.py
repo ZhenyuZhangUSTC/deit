@@ -166,7 +166,18 @@ def check_sparsity(model):
     return 100*(1-zero_sum/sum_list)
 
 
+def check_sparsity_dict(mask_dict)):
 
+    sum_list = 0
+    zero_sum = 0
+
+    for key in mask_dict.keys():
+        sum_list = sum_list+float(mask_dict[key].nelement())
+        zero_sum = zero_sum+float(torch.sum(mask_dict[key] == 0))  
+
+    print('* remain weight = ', 100*(1-zero_sum/sum_list),'%')
+    
+    return 100*(1-zero_sum/sum_list)
 
 
 
