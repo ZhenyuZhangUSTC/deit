@@ -3,9 +3,10 @@ import torch
 import numpy as np
 import torch.nn as nn
 import torch.nn.utils.prune as prune
+from layers import Conv2d, Linear
 
 __all__ = ['masked_parameters', 'SynFlow', 'check_sparsity', 'check_sparsity_dict', 
-        'prune_model_identity', 'prune_model_custom', 'extract_mask']
+        'prune_model_identity', 'prune_model_custom', 'extract_mask', 'prune_conv_linear']
 
 def masks(module):
     r"""Returns an iterator over modules masks, yielding the mask.
@@ -192,3 +193,23 @@ def extract_mask(model_dict):
             new_dict[key] = copy.deepcopy(model_dict[key])
 
     return new_dict
+
+def prune_conv_linear(model):
+
+    for name, module in reversed(model._modules.items()):
+
+        if len(list(module.children())) > 0:
+            model._modules[name] = prune_conv_linear(model=module)
+
+        if isinstance(module, nn.Linear):
+            bias=True
+            if module.bias == None:
+                bias=False
+            layer_new = Linear(module.in_features, module.out_features, bias)
+            model._modules[name] = layer_new
+
+        if isinstance(module, nn.Conv2d):
+            layer_new = Conv2d(module.in_channels, module.out_channels, module.kernel_size, module.stride)
+            model._modules[name] = layer_new
+
+    return model

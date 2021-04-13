@@ -24,9 +24,6 @@ from samplers import RASampler
 import models
 import utils
 from pruning_utils import *
-from generating_mask import prune_conv_linear
-from layers import Linear, Conv2d
-
 
 def get_args_parser():
     parser = argparse.ArgumentParser('DeiT training and evaluation script', add_help=False)
