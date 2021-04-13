@@ -42,6 +42,7 @@ class Pruner:
         raise NotImplementedError
 
     def _global_mask(self, sparsity):
+
         r"""Updates masks of model with scores by sparsity level globally.
         """
         # # Set score for masked parameters to -inf 
@@ -52,8 +53,10 @@ class Pruner:
         # Threshold scores
         global_scores = torch.cat([torch.flatten(v) for v in self.scores.values()])
         k = int((1.0 - sparsity) * global_scores.numel())
+
         if not k < 1:
             threshold, _ = torch.kthvalue(global_scores, k)
+            print((global_scores<=threshold).float().sum()/global_scores.nelement())            
             for mask, param in self.masked_parameters:
                 score = self.scores[id(param)] 
                 zero = torch.tensor([0.]).to(mask.device)
