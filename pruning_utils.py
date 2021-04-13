@@ -45,6 +45,7 @@ class Pruner:
         k = int((1.0 - sparsity) * global_scores.numel())
         if not k < 1:
             threshold, _ = torch.kthvalue(global_scores, k)
+            print(sparsity, (global_scores==0).float().sum()/global_scores.nelement(), (global_scores<0).float().sum()/global_scores.nelement())
             for mask, param in self.masked_parameters:
                 score = self.scores[id(param)] 
                 zero = torch.tensor([0.]).to(mask.device)
