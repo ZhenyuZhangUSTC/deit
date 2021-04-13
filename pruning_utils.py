@@ -23,7 +23,7 @@ def masked_parameters(model):
     for module in model.modules():
         if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
             print(22)
-            for name,p in module.named_parameters():
+            for name,p in module.named_parameters(recurse=False):
                 print(name, p.size())
             for mask, param in zip(masks(module), module.parameters(recurse=False)):
                 if param is module.weight_orig:
