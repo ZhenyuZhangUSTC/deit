@@ -28,6 +28,8 @@ parser.add_argument('--drop-path', type=float, default=0.1, metavar='PCT',
                         help='Drop path rate (default: 0.1)')
 args = parser.parse_args()
 
+__all__ = ['prune_conv_linear']
+
 
 def prune_loop(model, loss, pruner, dataloader, device, sparsity, scope, epochs, train_mode=False):
 
