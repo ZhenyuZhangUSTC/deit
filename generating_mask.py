@@ -38,6 +38,7 @@ def prune_loop(model, loss, pruner, dataloader, device, sparsity, scope, epochs,
         pruner.score(model, loss, dataloader, device)
 
         sparse = sparsity**((epoch + 1) / epochs)
+        print(sparse)
 
         pruner.mask(sparse, scope)
         check_sparsity(model)
