@@ -15,7 +15,6 @@ def masks(module):
         if "mask" in name:
             yield buf
 
-import pdb
 
 def masked_parameters(model):
     r"""Returns an iterator over models prunable parameters, yielding both the
@@ -23,7 +22,6 @@ def masked_parameters(model):
     """
     for module in model.modules():
         if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
-            pdb.set_trace()
             for mask, param in zip(masks(module), module.parameters(recurse=False)):
                 if param is module.weight_orig:
                     print(111)
