@@ -8,12 +8,12 @@ __all__ = ['masked_parameters', 'SynFlow', 'check_sparsity',
         'prune_model_identity', 'prune_model_custom', 'extract_mask']
 
 
-def masks(module):
-    r"""Returns an iterator over modules masks, yielding the mask.
-    """
-    for name, buf in module.named_buffers():
-        if "mask" in name:
-            yield buf
+# def masks(module):
+#     r"""Returns an iterator over modules masks, yielding the mask.
+#     """
+#     for name, buf in module.named_buffers():
+#         if "mask" in name:
+#             yield buf
 
 
 def masked_parameters(model):
@@ -22,13 +22,16 @@ def masked_parameters(model):
     """
     for module in model.modules():
         if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
-            print(22)
-            for name,p in module.named_parameters(recurse=False):
-                print(name, p.size(), module.weight_orig.size())
-            for mask, param in zip(masks(module), module.parameters(recurse=False)):
-                if param is module.weight_orig:
-                    print(111)
-                    yield mask, param
+                yield module.weight_mask, module.weight_orig
+            
+            # for name,p in module.named_parameters():
+        
+
+            #     print(name, p.size(), module.weight_orig.size())
+            # for mask, param in zip(masks(module), module.parameters(recurse=False)):
+            #     if param is module.weight_orig:
+            #         print(111)
+            #         yield mask, param
 
 class Pruner:
     def __init__(self, masked_parameters):
