@@ -39,14 +39,8 @@ def prune_loop(model, loss, pruner, dataloader, device, sparsity, scope, epochs,
     # Prune model
     for epoch in range(epochs):
         pruner.score(model, loss, dataloader, device)
-
         sparse = sparsity**((epoch + 1) / epochs)
-        print(sparse)
         pruner.mask(sparse, scope)
-
-        current_mask = extract_mask(model.state_dict())
-        check_sparsity_dict(current_mask)
-
 
 def prune_conv_linear(model):
 
@@ -104,7 +98,7 @@ model.load_state_dict(save_state_dict, strict=False)
 model.cuda()
 
 pruner = SynFlow(masked_parameters(model))
-prune_loop(model, None, pruner, loader, torch.device('cuda:0'), args.sparsity, scope='global', epochs=10, train_mode=True)
+prune_loop(model, None, pruner, loader, torch.device('cuda:0'), args.sparsity, scope='global', epochs=100, train_mode=True)
 print('sparsity = {}'.format(args.sparsity))
 
 current_mask = extract_mask(model.state_dict())
