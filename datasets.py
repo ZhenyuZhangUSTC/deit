@@ -131,6 +131,7 @@ def build_transform(is_train, args):
     resize_im = args.input_size > 32
     if is_train:
         # this should always dispatch to transforms_imagenet_train
+        print(args.train_interpolation)
         transform = create_transform(
             input_size=args.input_size,
             is_training=True,
