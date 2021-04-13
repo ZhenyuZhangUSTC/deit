@@ -46,9 +46,9 @@ class Pruner:
         r"""Updates masks of model with scores by sparsity level globally.
         """
         # # Set score for masked parameters to -inf 
-        for mask, param in self.masked_parameters:
-            score = self.scores[id(param)]
-            score[mask == 0.0] = -np.inf
+        # for mask, param in self.masked_parameters:
+        #     score = self.scores[id(param)]
+        #     score[mask == 0.0] = -np.inf
 
         # Threshold scores
         global_scores = torch.cat([torch.flatten(v) for v in self.scores.values()])
