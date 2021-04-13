@@ -111,7 +111,7 @@ def build_dataset(is_train, args):
     elif args.data_set == 'IMNET':
         root = os.path.join(args.data_path, 'train' if is_train else 'val')
         if args.data_rate < 1 and is_train:
-            dataset = split_imagenet_dataset(root, args.data_split, args.data_rate, transform=transform)
+            dataset = split_imagenet_dataset(args.data_path, args.data_split, args.data_rate, transform=transform)
         else:
             dataset = datasets.ImageFolder(root, transform=transform)
         nb_classes = 1000
