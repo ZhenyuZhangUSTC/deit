@@ -153,6 +153,20 @@ def check_sparsity(model):
     
     return 100*(1-zero_sum/sum_list)
 
+def check_sparsity_dict(model_dict):
+
+    sum_list = 0
+    zero_sum = 0
+
+    for key in model_dict.keys():
+        if 'mask' in key:
+            sum_list = sum_list+float(model_dict[key].nelement())
+            zero_sum = zero_sum+float(torch.sum(model_dict[key] == 0))  
+
+    print('* remain weight = ', 100*(1-zero_sum/sum_list),'%')
+    
+    return 100*(1-zero_sum/sum_list)
+
 def prune_model_identity(model):
 
     print('start pruning with identity mask')
