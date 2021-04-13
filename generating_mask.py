@@ -73,7 +73,7 @@ model.cuda()
 prune_model_identity(model)
 pruner = SynFlow(masked_parameters(model))
 
-prune_loop(model, None, pruner, loader, torch.device('cuda: 0'), args.sparsity, scope='global', epochs=100, train_mode=True)
+prune_loop(model, None, pruner, loader, torch.device('cuda:0'), args.sparsity, scope='global', epochs=100, train_mode=True)
 
 print('sparsity = {}'.format(args.sparsity))
 check_sparsity(model) 
