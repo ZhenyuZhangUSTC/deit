@@ -131,6 +131,9 @@ class SynFlow(Pruner):
                 param.abs_()
             return signs
 
+        check_sparsity_dict(model.state_dict())
+
+
         @torch.no_grad()
         def nonlinearize(model, signs):
             # model.float()
@@ -138,18 +141,22 @@ class SynFlow(Pruner):
                 param.mul_(signs[name])
         
         signs = linearize(model)
+        check_sparsity_dict(model.state_dict())
 
         (data, _) = next(iter(dataloader))
         input_dim = list(data[0,:].shape)
         input = torch.ones([1] + input_dim).to(device)#, dtype=torch.float64).to(device)
         output = model(input)
         torch.sum(output).backward()
+        check_sparsity_dict(model.state_dict())
         
         for _, p in self.masked_parameters:
             self.scores[id(p)] = torch.clone(p.grad * p).detach().abs_()
             p.grad.data.zero_()
+        check_sparsity_dict(model.state_dict())
 
         nonlinearize(model, signs)
+        check_sparsity_dict(model.state_dict())
 
 def check_sparsity(model):
 
@@ -172,8 +179,9 @@ def check_sparsity_dict(mask_dict):
     zero_sum = 0
 
     for key in mask_dict.keys():
-        sum_list = sum_list+float(mask_dict[key].nelement())
-        zero_sum = zero_sum+float(torch.sum(mask_dict[key] == 0))  
+        if 'mask' in key:
+            sum_list = sum_list+float(mask_dict[key].nelement())
+            zero_sum = zero_sum+float(torch.sum(mask_dict[key] == 0))  
 
     print('* remain weight = ', 100*(1-zero_sum/sum_list),'%')
     
