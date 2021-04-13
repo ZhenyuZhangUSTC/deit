@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.utils.prune as prune
 
-__all__ = ['masked_parameters', 'SynFlow', 'check_sparsity', 
+__all__ = ['masked_parameters', 'SynFlow', 'check_sparsity', 'check_sparsity_dict', 
         'prune_model_identity', 'prune_model_custom', 'extract_mask']
 
 
@@ -166,7 +166,7 @@ def check_sparsity(model):
     return 100*(1-zero_sum/sum_list)
 
 
-def check_sparsity_dict(mask_dict)):
+def check_sparsity_dict(mask_dict):
 
     sum_list = 0
     zero_sum = 0

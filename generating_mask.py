@@ -78,8 +78,10 @@ pruner = SynFlow(masked_parameters(model))
 prune_loop(model, None, pruner, loader, torch.device('cuda:0'), args.sparsity, scope='global', epochs=10, train_mode=True)
 
 print('sparsity = {}'.format(args.sparsity))
-check_sparsity(model) 
 current_mask = extract_mask(model.state_dict())
+check_sparsity(model) 
+check_sparsity_dict(current_mask)
+
 torch.save(current_mask, args.save_file)
 
 
