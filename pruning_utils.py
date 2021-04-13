@@ -25,7 +25,8 @@ def masked_parameters(model):
         if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
             pdb.set_trace()
             for mask, param in zip(masks(module), module.parameters(recurse=False)):
-                if param is not module.bias:
+                if param is module.weight_orig:
+                    print(111)
                     yield mask, param
 
 class Pruner:
