@@ -21,7 +21,7 @@ def masked_parameters(model):
     for module in model.modules():
         if isinstance(module, nn.Conv2d) or isinstance(module, nn.Linear):
             for mask, param in zip(masks(module), module.parameters(recurse=False)):
-                if param is not module.bias
+                if param is not module.bias:
                     yield mask, param
 
 class Pruner:
