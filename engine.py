@@ -99,31 +99,25 @@ def train_one_epoch_test(model: torch.nn.Module, criterion: DistillationLoss,
 
 
         # show gradient sparsity 
+        weight_zero = 0
         grad_zero = 0
         elements = 0
 
         for name, p in model.named_parameters():
-            if p.requires_grad:
-                if not p.grad == None:
+
+            mask_name = name+'_mask'
+            if mask_name in model.state_dict().keys():
+                if p.requires_grad:
+                    wzero = (model.state_dict()[mask_name] == 0).float().sum().item()
                     gzero = (p.grad == 0).float().sum().item()
                     ele = p.grad.nelement()
-                    grad_zero += grad_zero
+                    assert ele == model.state_dict()[mask_name].nelement()
+                    grad_zero += gzero
+                    weight_zero += wzero
                     elements += ele 
-                    print(name, 'sparsity = {:.2f}%'.format(100*gzero/ele))
-                else:
-                    print(name, 'grad = None')
+                    print(name, 'gradient sparsity = {:.2f}%, weight sparsity = {:.2f}%'.format(100*gzero/ele, 100*wzero/ele))
 
-        print('total gradient sparsity = {:.2f}%, all-element = {}'.format(100*grad_zero/elements, elements))
-
-        # calculate weight sparsity 
-        weight_zero = 0
-        elements = 0
-        for key in model.state_dict().keys():
-            if 'mask' in key:
-                print(key)
-                weight_zero += (model.state_dict()[key] == 0).float().sum().item()
-                elements += model.state_dict()[key].nelement()
-        print('weight sparsity = {:.2f}%'.format(100*weight_zero/elements))
+        print('total gradient sparsity = {:.2f}%, total weight sparsity = {:.2f}%, all-element = {}'.format(100*grad_zero/elements, 100*weight_zero/elements, elements))
 
         assert False 
 
