@@ -1,6 +1,6 @@
 python -m torch.distributed.launch \
     --nproc_per_node=4 \
-    --use_env main.py \
+    --use_env show_gradient_sparsity.py \
     --model deit_tiny_patch16_224 \
     --batch-size 256 \
     --data-path /datadrive_c/tianlong/TLC/imagenet \
