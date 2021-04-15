@@ -9,4 +9,4 @@ python -m torch.distributed.launch \
     --data_rate 0.2 \
     --data_split split/ImageNet_train.txt \
     --init_weight deit_tiny_mask_init/random_init.pt \
-    --dist_url 'tcp://127.0.0.1:33251'
+    --dist_url 'tcp://127.0.0.1:30445'
