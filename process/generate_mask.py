@@ -29,10 +29,10 @@ index70 = sort_args[-int(nelement*0.7)]
 for key in mask_dict.keys():
     ones = torch.ones_like(mask_dict[key])
     zeros = torch.zeros_like(mask_dict[key])
-    new_mask5[key] = torch.where(indict_mask[key]<index5, zeros, ones)
-    new_mask20[key] = torch.where(indict_mask[key]<index20, zeros, ones)
-    new_mask50[key] = torch.where(indict_mask[key]<index50, zeros, ones)
-    new_mask70[key] = torch.where(indict_mask[key]<index70, zeros, ones)
+    new_mask5[key] = torch.where(indict_mask[key]<all_sequence[index5], zeros, ones)
+    new_mask20[key] = torch.where(indict_mask[key]<all_sequence[index20], zeros, ones)
+    new_mask50[key] = torch.where(indict_mask[key]<all_sequence[index50], zeros, ones)
+    new_mask70[key] = torch.where(indict_mask[key]<all_sequence[index70], zeros, ones)
 
 torch.save(new_mask5, 'deit_tiny_mask_init/rp_5.pt')
 torch.save(new_mask20, 'deit_tiny_mask_init/rp_20.pt')
