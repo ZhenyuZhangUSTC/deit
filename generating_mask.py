@@ -63,6 +63,53 @@ def prune_conv_linear(model):
 
     return model
 
+# # Synthetic
+# number_examples = 100
+# data = torch.ones(number_examples, 3, args.input_size, args.input_size)
+# target = torch.ones(number_examples)
+# data_set = torch.utils.data.TensorDataset(data, target)
+# loader = torch.utils.data.DataLoader(data_set, 
+#     batch_size=1, shuffle=False, 
+#     num_workers=2, pin_memory=True)
+
+# print(f"Creating model: {args.model}")
+# model = create_model(
+#     args.model,
+#     pretrained=False,
+#     num_classes=1000,
+#     drop_rate=args.drop,
+#     drop_path_rate=args.drop_path,
+#     drop_block_rate=None,
+# )
+# torch.save(model.state_dict(), 'random_init.pt')
+# #pretrained or not
+# if args.pretrained:
+#     print('loading pretrained weight')
+#     checkpoint = torch.hub.load_state_dict_from_url(
+#         args.pretrained, map_location='cpu', check_hash=True)
+#     model.load_state_dict(checkpoint['model'])
+
+# save_state_dict = copy.deepcopy(model.state_dict())
+# prune_conv_linear(model)
+
+# for key in save_state_dict.keys():
+#     if not key in model.state_dict().keys():
+#         print('can not load key = {}'.format(key))
+
+# model.load_state_dict(save_state_dict, strict=False)
+# model.cuda()
+
+# pruner = SynFlow(masked_parameters(model))
+# prune_loop(model, None, pruner, loader, torch.device('cuda:0'), args.sparsity, scope='global', epochs=1, train_mode=True)
+# print('sparsity = {}'.format(args.sparsity))
+
+# current_mask = extract_mask(model.state_dict())
+# check_sparsity_dict(current_mask)
+
+# torch.save(current_mask, args.save_file)
+
+
+# Magnitude 
 number_examples = 100
 data = torch.ones(number_examples, 3, args.input_size, args.input_size)
 target = torch.ones(number_examples)
@@ -80,13 +127,11 @@ model = create_model(
     drop_path_rate=args.drop_path,
     drop_block_rate=None,
 )
-torch.save(model.state_dict(), 'random_init.pt')
-#pretrained or not
-if args.pretrained:
-    print('loading pretrained weight')
-    checkpoint = torch.hub.load_state_dict_from_url(
-        args.pretrained, map_location='cpu', check_hash=True)
-    model.load_state_dict(checkpoint['model'])
+
+print('loading pretrained weight')
+checkpoint = torch.hub.load_state_dict_from_url(
+    args.pretrained, map_location='cpu', check_hash=True)
+model.load_state_dict(checkpoint['model'])
 
 save_state_dict = copy.deepcopy(model.state_dict())
 prune_conv_linear(model)
@@ -98,7 +143,7 @@ for key in save_state_dict.keys():
 model.load_state_dict(save_state_dict, strict=False)
 model.cuda()
 
-pruner = SynFlow(masked_parameters(model))
+pruner = Mag(masked_parameters(model))
 prune_loop(model, None, pruner, loader, torch.device('cuda:0'), args.sparsity, scope='global', epochs=1, train_mode=True)
 print('sparsity = {}'.format(args.sparsity))
 
@@ -106,6 +151,5 @@ current_mask = extract_mask(model.state_dict())
 check_sparsity_dict(current_mask)
 
 torch.save(current_mask, args.save_file)
-
 
 

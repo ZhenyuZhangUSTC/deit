@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.nn.utils.prune as prune
 from layers import Conv2d, Linear
 
-__all__ = ['masked_parameters', 'SynFlow', 'check_sparsity', 'check_sparsity_dict', 
+__all__ = ['masked_parameters', 'SynFlow', 'Mag', 'check_sparsity', 'check_sparsity_dict', 
         'prune_model_identity', 'prune_model_custom', 'extract_mask', 'prune_conv_linear']
 
 def masks(module):
@@ -140,6 +140,14 @@ class SynFlow(Pruner):
 
         nonlinearize(model, signs)
 
+class Mag(Pruner):
+    def __init__(self, masked_parameters):
+        super(Mag, self).__init__(masked_parameters)
+    
+    def score(self, model, loss, dataloader, device):
+        for _, p in self.masked_parameters:
+            self.scores[id(p)] = torch.clone(p.data).detach().abs_()
+
 def check_sparsity(model):
 
     sum_list = 0
@@ -213,3 +221,5 @@ def prune_conv_linear(model):
             model._modules[name] = layer_new
 
     return model
+
+
